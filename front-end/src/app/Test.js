@@ -1,11 +1,11 @@
 import React from 'react';
 import { hot } from 'react-hot-loader';
-import './Test.scss';
+import style from '../style/components/test.scss';
 
 const Test = () => {
   return (
     <>
-      <h1 className="header">sup!</h1>
+      <h1 className={style.header}>sup!</h1>
     </>
   );
 };
