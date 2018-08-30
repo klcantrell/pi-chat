@@ -23,8 +23,8 @@ module.exports = {
   },
   devServer: {
     open: false,
-    // publicPath: '/',
-    // contentBase: path.join(__dirname, 'dist'),
+    publicPath: '/',
+    contentBase: path.join(__dirname, 'dist'),
     historyApiFallback: true,
     hot: true,
   },
@@ -70,6 +70,16 @@ module.exports = {
             },
           },
         ],
+      },
+      {
+        test: /\.(ttf|eot|woff|woff2|otf)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            // outputPath: 'dist/',
+          },
+        },
       },
     ],
   },
