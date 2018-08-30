@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { hot } from 'react-hot-loader';
+import 'materialize-css/js/slider';
 import style from '../../style/components/test.scss';
 
 class Test extends Component {
