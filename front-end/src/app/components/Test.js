@@ -6,12 +6,25 @@ import style from '../../style/components/test.scss';
 class Test extends Component {
   componentDidMount() {
     const elems = document.querySelectorAll('.dropdown-trigger');
-    const instances = M.Dropdown.init(elems, { coverTrigger: false });
+    this.instance = M.Dropdown.init(elems, { coverTrigger: false })[0];
+    document.querySelector('body').addEventListener('click', e => {
+      if (e.currentTarget.nodeName === 'BODY') {
+        this.instance.close();
+        console.log('sup');
+      }
+    })
+  }
+
+  close = e => {
+    console.log(e.currentTarget);
+    if (e.currentTarget === e.target) {
+      this.instance.close();
+    }
   }
   
   render() {
     return (
-      <div style={{width: "300px"}} ref={node => this.container = node}>
+      <div style={{width: "300px"}} onClick={this.close}>
         <h1 className={style.header}>sup!</h1>
         <a className="waves-effect waves-light btn">button</a>
         <a className='dropdown-trigger btn' data-target='dropdown1'>Drop Me!</a>
