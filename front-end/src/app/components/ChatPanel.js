@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styles from '../../style/components/chat-panel.scss'
 import Chat from './Chat';
+import Input from './Input';
 
 const chats = [
   {
@@ -16,13 +17,13 @@ const chats = [
 ];
 
 class ChatPanel extends Component {
-
   render() {
     return (
       <div className={`${styles.panel} card-panel`}>
         {chats.map((c, i) => (
           <Chat key={`${c.type}-${i}`} chat={c} />
         ))}
+        <Input />
       </div>
     );
   }
