@@ -5,13 +5,12 @@ import 'materialize-css/js/cash';
 import 'materialize-css/js/global';
 import 'materialize-css/js/anime.min';
 import 'materialize-css/js/waves';
-
-
-import Test from './components/Test';
-
 import '../style/app.global.scss';
 
+import App from './components/App';
+
+
 ReactDOM.render(
-  <Test />,
+  <App />,
   document.getElementById('app')
 );
