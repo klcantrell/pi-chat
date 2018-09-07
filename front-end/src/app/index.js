@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import AWSAppSyncClient from 'aws-appsync';
 import Amplify, { Auth } from 'aws-amplify';
-import { Provider } from 'react-apollo';
+import { ApolloProvider } from 'react-apollo';
 import gql from 'graphql-tag';
 
 import 'materialize-css/js/cash';
@@ -23,7 +23,6 @@ Amplify.configure({
   },
 });
 
-
 const client = new AWSAppSyncClient({
   url: awsConfig.graphqlEndpoint,
   region: awsConfig.region,
@@ -33,23 +32,9 @@ const client = new AWSAppSyncClient({
   },
 });
 
-client.query({
-  query: gql`
-    {
-      singleChat {
-        items {
-          id
-          message
-          createdAt
-        }
-      }
-    }
-  `,
-})
-  .then(res => console.log(res.data))
-  .catch(err => console.log(err));
-
 ReactDOM.render(
-  <App />,
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
   document.getElementById('app')
 );
