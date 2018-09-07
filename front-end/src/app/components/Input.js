@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import styles from '../../style/components/input.scss';
 
 class Input extends Component {
   state = {
@@ -20,7 +21,7 @@ class Input extends Component {
   render() {
     const { inputText } = this.state;
     return (
-      <div className="input-field">
+      <div className={`input-field ${styles.input}`}>
         <i className="material-icons prefix">mode_edit</i>
         <textarea
           id="chat_input"

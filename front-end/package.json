@@ -72,6 +72,7 @@
     "purifycss-webpack": "^0.7.0",
     "react": "^16.4.2",
     "react-apollo": "^2.1.11",
+    "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^16.4.2",
     "react-hot-loader": "^4.3.5",
     "sass-loader": "^7.1.0",

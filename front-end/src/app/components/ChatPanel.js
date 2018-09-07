@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
-import styles from '../../style/components/chat-panel.scss'
+import styles from '../../style/components/chat-panel.scss';
 import Chat from './Chat';
 import Input from './Input';
 
@@ -22,6 +22,11 @@ class ChatPanel extends Component {
     chats: [],
   }
 
+  componentDidUpdate() {
+    const height = this.chatsBox.offsetHeight;
+    this.overflowFix.scrollTop = height;
+  }
+
   captureUserChat = chat => {
     const userChat = {
       message: chat,
@@ -39,9 +44,13 @@ class ChatPanel extends Component {
     const { chats } = this.state;
     return (
       <div className={`${styles.panel} card-panel`}>
-        {chats.map((c, i) => (
-          <Chat key={`${c.type}-${i}`} chat={c} />
-        ))}
+        <div className={styles["overflow-fix"]} ref={node => this.overflowFix = node}>
+          <div className={styles.chats} ref={node => this.chatsBox = node}>
+            {chats.map((c, i) => (
+              <Chat key={`${c.type}-${i}`} chat={c} />
+            ))}
+          </div>
+        </div>
         <Input handleSubmit={this.captureUserChat} />
       </div>
     );
