@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
+import SimpleBar from 'simplebar';
 import styles from '../../style/components/chat-panel.scss';
 import Chat from './Chat';
 import Input from './Input';
@@ -22,9 +23,18 @@ class ChatPanel extends Component {
     chats: [],
   }
 
+  componentDidMount() {
+    this.simplebar = new SimpleBar(this.overflowFix, {
+      autoHide: false,
+    });
+  }
+
   componentDidUpdate() {
-    const height = this.chatsBox.offsetHeight;
-    this.overflowFix.scrollTop = height;
+    if (this.simplebar) {
+      const scrollEl = this.simplebar.getScrollElement();
+      const height = this.chatsBox.offsetHeight;
+      scrollEl.scrollTop = height;
+    }
   }
 
   captureUserChat = chat => {
