@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styles from '../../style/components/chat.scss';
 import posed from 'react-pose';
+import { timeDifferenceForDate } from '../utils'; 
 
 const ChatPosed = posed.div({
   visible: {
@@ -28,6 +29,16 @@ class Chat extends Component {
     })
   }
 
+  renderTime(chat) {
+    if (chat.type === 'pi') {
+      const piStaleValue = timeDifferenceForDate(chat.createdAt);
+      if (piStaleValue) {
+        return `Last update was ${piStaleValue}`;
+      }
+    }
+    return `${chat.createdAt.toDateString()} at ${chat.createdAt.toLocaleTimeString()}`;
+  }
+
   render() {
     const { isVisible } = this.state;
     const { chat } = this.props;
@@ -38,11 +49,15 @@ class Chat extends Component {
           <div className={styles.meta}>
             <p className={styles.owner}>{chat.type === 'pi' ? 'pi' : 'me'}</p>
             <p className={styles.date}>
-              {`${chat.createdAt.toDateString()} at ${chat.createdAt.toLocaleTimeString()}`}
+              {this.renderTime(chat)}
             </p>
           </div>
           <div className="card-content">
-            <p>{chat.message}</p>
+            {chat.welcome ? (
+                <p dangerouslySetInnerHTML={chat.message} />
+              ) : (
+                <p>{chat.message}</p>
+            )}
           </div>
         </div>
       </ChatPosed>
