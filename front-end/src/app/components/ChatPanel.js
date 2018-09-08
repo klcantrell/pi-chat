@@ -23,6 +23,8 @@ const TEMP_SUBSCRIPTION = gql`
     onCreateChat {
       message
       createdAt
+      id
+      kind
     }
   }
 `;
@@ -79,6 +81,7 @@ class ChatPanel extends Component {
     }
     if (!prevState.userQuerying && this.state.userQuerying) {
       this.props.client.query({
+        fetchPolicy: 'no-cache',
         query: TEMP_QUERY,
       }).then(res => {
         const data = { ...res.data.singleChat.items[0] };
@@ -115,6 +118,7 @@ class ChatPanel extends Component {
     if (prevState.userWaitingOnSubscriptionResponse && !this.state.userWaitingOnSubscriptionResponse) {
       this.setState({
         showLoader: false,
+        userWaitingOnSubscriptionResponse: true,
       });
     }
   }
@@ -151,25 +155,26 @@ class ChatPanel extends Component {
       if (this.state.userWaitingOnSubscriptionResponse) {
         this.unsubscribe();
       }
-    }, 5000);
+    }, 10000);
+    let _this = this;
     this.subscriptionObserver = this.props.client.subscribe({
       query: TEMP_SUBSCRIPTION,
     }).subscribe({
       next(data) {
         console.log(data);
-        clearTimeout(this.notLiveTimeout);
-        this.setState({
+        clearTimeout(_this.notLiveTimeout);
+        _this.setState({
           userWaitingOnSubscriptionResponse: false,
         });
-        this.notLiveTimeout = setTimeout(() => {
-          if (this.state.userWaitingOnSubscriptionResponse) {
-            this.unsubscribe();
+        _this.notLiveTimeout = setTimeout(() => {
+          if (_this.state.userWaitingOnSubscriptionResponse) {
+            _this.unsubscribe();
           }
-        }, 5000);
+        }, 10000);
       },
       error(err) {
         console.log(err);
-        this.unsubscribe();
+        _this.unsubscribe();
       }
     });
   }
