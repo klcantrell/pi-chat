@@ -8,7 +8,7 @@ import Input from './Input';
 import Loading from './Loading';
 
 const TEMP_QUERY = gql`
-  {
+  query {
     singleChat {
       items {
         message
@@ -18,10 +18,26 @@ const TEMP_QUERY = gql`
   }
 `;
 
+const TEMP_SUBSCRIPTION = gql`
+  subscription {
+    onCreateChat {
+      message
+      createdAt
+    }
+  }
+`;
+
 const WELCOME_CHAT = {
     welcome: true,
     type: 'pi',
-    message: { __html: 'Welcome! Type <strong>get temperature</strong> and I\'ll give you the latest temperature reading.  Type <strong>log</strong> and I\'ll continuously send temperature readings every second if I can.' },
+    message: { __html: `
+      <span>Welcome!  Here are a list of messages you can send me:</span>
+      <ul class=${styles.welcomeInstructionsList}>
+        <li class=${styles.welcomeInstructionsItem}>Type <strong>get temperature</strong> and I\'ll give you the latest temperature reading.</li>
+        <li class=${styles.welcomeInstructionsItem}>Type <strong>log</strong> and I\'ll continuously send temperature readings every second if I can.</li>
+        <li class=${styles.welcomeInstructionsItem}>Type <strong>stop</strong> if you need me to quit logging.</li>
+      </ul>
+    `},
     createdAt: new Date(Date.now()),
 };
 
@@ -35,6 +51,8 @@ class ChatPanel extends Component {
   state = {
     chats: [],
     userQuerying: false,
+    subscriptionActive: false,
+    userWaitingOnSubscriptionResponse: false,
     welcomeSent: false,
     showLoader: false,
   }
@@ -85,10 +103,26 @@ class ChatPanel extends Component {
         }, 2500);
       });
     }
+    if (!prevState.userWaitingOnSubscriptionResponse
+          && this.state.userWaitingOnSubscriptionResponse
+          && this.state.subscriptionActive) {
+      setTimeout(() => {
+        this.setState({
+          showLoader: true,
+        });
+      }, 1500);
+    }
+    if (prevState.userWaitingOnSubscriptionResponse && !this.state.userWaitingOnSubscriptionResponse) {
+      this.setState({
+        showLoader: false,
+      });
+    }
   }
 
   captureUserChat = chat => {
     const isUserQuerying = chat.includes('get temperature');
+    const isUserSubscribing = chat.includes('log');
+    const isUserUnsubscribing = chat.includes('stop');
     const userChat = {
       message: chat,
       createdAt: new Date(),
@@ -100,6 +134,57 @@ class ChatPanel extends Component {
         userQuerying: isUserQuerying,
       };
     });
+    if (isUserSubscribing) {
+      this.subscribe();
+    }
+    if (isUserUnsubscribing && this.state.subscriptionActive) {
+      this.unsubscribe();
+    }
+  }
+
+  subscribe() {
+    this.setState({
+      subscriptionActive: true,
+      userWaitingOnSubscriptionResponse: true,
+    });
+    this.notLiveTimeout = setTimeout(() => {
+      if (this.state.userWaitingOnSubscriptionResponse) {
+        this.unsubscribe();
+      }
+    }, 5000);
+    this.subscriptionObserver = this.props.client.subscribe({
+      query: TEMP_SUBSCRIPTION,
+    }).subscribe({
+      next(data) {
+        console.log(data);
+        clearTimeout(this.notLiveTimeout);
+        this.setState({
+          userWaitingOnSubscriptionResponse: false,
+        });
+        this.notLiveTimeout = setTimeout(() => {
+          if (this.state.userWaitingOnSubscriptionResponse) {
+            this.unsubscribe();
+          }
+        }, 5000);
+      },
+      error(err) {
+        console.log(err);
+        this.unsubscribe();
+      }
+    });
+  }
+
+  unsubscribe() {
+    if (this.subscriptionObserver) {
+      this.subscriptionObserver.unsubscribe();
+      this.setState(({ chats }) => {
+        return {
+          chats: [...chats, NOT_LIVE_CHAT],
+          userWaitingOnSubscriptionResponse: false,
+          subscriptionActive: false,
+        };
+      });
+    }
   }
 
   render() {

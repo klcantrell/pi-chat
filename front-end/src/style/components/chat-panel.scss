@@ -14,3 +14,12 @@
   flex-direction: column;
   justify-content: flex-start;
 }
+
+.welcomeInstructionsList {
+  text-align: left;
+  padding-left: 10px !important;
+}
+
+.welcomeInstructionsItem {
+  list-style-type: disc !important;
+}
