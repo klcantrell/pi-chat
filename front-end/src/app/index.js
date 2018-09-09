@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import AWSAppSyncClient from 'aws-appsync';
-import Amplify, { Auth } from 'aws-amplify';
+import Auth from '@aws-amplify/auth';
 import { ApolloProvider } from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -16,11 +16,9 @@ import '../style/app.global.scss';
 import awsConfig from './aws.config';
 import App from './components/App';
 
-Amplify.configure({
-  Auth: {
-    identityPoolId: awsConfig.identityPoolId,
-    region: awsConfig.region,
-  },
+Auth.configure({
+  identityPoolId: awsConfig.identityPoolId,
+  region: awsConfig.region,
 });
 
 const client = new AWSAppSyncClient({

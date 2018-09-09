@@ -1,17 +1,14 @@
 const AWSAppSyncClient = require('aws-appsync').default;
-const Amplify = require('aws-amplify').default;
+const Auth = require('@aws-amplify/auth').default;
 const gql = require('graphql-tag');
 const fetch = require('node-fetch');
 const awsConfig = require('./aws.config');
-const { Auth } = Amplify;
 
 global.fetch = fetch;
 
-Amplify.configure({
-  Auth: {
-    identityPoolId: awsConfig.identityPoolId,
-    region: awsConfig.region,
-  },
+Auth.configure({
+  identityPoolId: awsConfig.identityPoolId,
+  region: awsConfig.region,
 });
 
 const client = new AWSAppSyncClient({
@@ -25,7 +22,7 @@ const client = new AWSAppSyncClient({
 
 const TEST_MUTATION = gql`
   mutation {
-    createChat(message: "TEST FROM THE PI CODE!") {
+    createChat(message: "YET ANOTHER TEST FROM THE PI CODE!") {
       id
       message
       createdAt
@@ -36,6 +33,8 @@ const TEST_MUTATION = gql`
 
 // client.mutate({
 //   mutation: TEST_MUTATION,
+// }).then(res => {
+//   console.log(res);
 // });
 
 console.log('pi server started');
