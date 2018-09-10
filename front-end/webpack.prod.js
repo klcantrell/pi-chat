@@ -4,7 +4,6 @@ const path = require('path');
 const glob = require('glob-all');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const PurifyCssPlugin = require('purifycss-webpack');
 const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 module.exports = {
@@ -83,16 +82,7 @@ module.exports = {
       inject: true,
     }),
     new MiniCssExtractPlugin({
-      filename: "[name].css",
-    }),
-    new PurifyCssPlugin({
-      paths: glob.sync([
-        path.join(__dirname, 'src/index/*.html'),
-        path.join(__dirname, 'src/js/index/*.js'),
-      ]),
-      purifyOptions: {
-        whitelist: ['*pi-chat*']
-      }
+      filename: "unpurified.css",
     }),
     // new MinifyPlugin({}, {
     //   exclude: /node_modules/
