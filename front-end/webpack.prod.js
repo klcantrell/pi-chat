@@ -1,7 +1,7 @@
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const path = require('path');
-const glob = require('glob');
+const glob = require('glob-all');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const PurifyCssPlugin = require('purifycss-webpack');
@@ -86,7 +86,10 @@ module.exports = {
       filename: "[name].css",
     }),
     new PurifyCssPlugin({
-      paths: glob.sync(path.join(__dirname, 'index/*.html')),
+      paths: glob.sync([
+        path.join(__dirname, 'src/index/*.html'),
+        path.join(__dirname, 'src/js/index/*.js'),
+      ]),
       purifyOptions: {
         whitelist: ['*pi-chat*']
       }
@@ -94,6 +97,6 @@ module.exports = {
     // new MinifyPlugin({}, {
     //   exclude: /node_modules/
     // }),
-    new BundleAnalyzerPlugin()
+    // new BundleAnalyzerPlugin()
   ],
 };

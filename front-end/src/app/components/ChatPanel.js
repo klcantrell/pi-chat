@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withApollo } from 'react-apollo';
+import { ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
 import SimpleBar from 'simplebar';
 import styles from '../../style/components/chat-panel.scss';
@@ -63,14 +63,16 @@ class ChatPanel extends Component {
     this.simplebar = new SimpleBar(this.overflowFix, {
       autoHide: false,
     });
-    setTimeout(() => {
-      this.setState(({ chats }) => {
-        return {
-          chats: [...chats, WELCOME_CHAT],
-          welcomeSent: true,
-        };
-      });
-    }, 2000);
+    if (this.props.ready) {
+      setTimeout(() => {
+        this.setState(({ chats }) => {
+          return {
+            chats: [...chats, WELCOME_CHAT],
+            welcomeSent: true,
+          };
+        });
+      }, 2000);
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -194,6 +196,7 @@ class ChatPanel extends Component {
 
   render() {
     const { chats, showLoader, welcomeSent } = this.state;
+    const { ready } = this.props;
     return (
       <div className={`${styles.panel} card-panel`}>
         <div className={styles["overflow-fix"]} ref={node => this.overflowFix = node}>
@@ -208,10 +211,20 @@ class ChatPanel extends Component {
             )}
           </div>
         </div>
-        <Input handleSubmit={this.captureUserChat} />
+        <Input handleSubmit={this.captureUserChat} ready={ready} />
       </div>
     );
   }
 }
 
-export default withApollo(ChatPanel);
+export default ({ ready }) => {
+  return ready ? (
+    <ApolloConsumer>
+      {client => (
+        <ChatPanel client={client} ready={ready} />
+      )}
+    </ApolloConsumer>
+  ) : (
+    <ChatPanel ready={ready} />
+  );
+};
