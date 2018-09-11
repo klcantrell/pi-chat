@@ -1,9 +1,13 @@
 // CUSTOM COLORS
 
-$background-body: #eeeeee;
-$background-loading: orange;
+$primary: #ff9800;
+$input-text-color: #fafafa;
+$background-body: rgb(173, 173, 173);
+$background-panel: #665EC5;
+$background-chat: #fcfcfc;
  
 
 //  MATERIALIZE OVERRIDES
 
-$input-focus-color: #40c4ff;
+$input-focus-color: $primary;
+$input-border-color: $input-text-color;
