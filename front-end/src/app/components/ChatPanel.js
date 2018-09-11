@@ -71,7 +71,7 @@ class ChatPanel extends Component {
             welcomeSent: true,
           };
         });
-      }, 2000);
+      }, 3000);
     }
   }
 
@@ -205,13 +205,13 @@ class ChatPanel extends Component {
               <Chat key={`${c.type}-${i}`} chat={c} />
             ))}
             {showLoader || !welcomeSent ? (
-              <Loading />
+              <Loading initialLoad={!welcomeSent} />
             ) : (
               null
             )}
           </div>
         </div>
-        <Input handleSubmit={this.captureUserChat} ready={ready} />
+        <Input handleSubmit={this.captureUserChat} disabled={!welcomeSent} />
       </div>
     );
   }
@@ -225,6 +225,6 @@ export default ({ ready }) => {
       )}
     </ApolloConsumer>
   ) : (
-    <ChatPanel ready={ready} />
+    <ChatPanel />
   );
 };

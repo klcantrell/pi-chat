@@ -20,16 +20,16 @@ class Input extends Component {
 
   render() {
     const { inputText } = this.state;
-    const { ready } = this.props;
+    const { disabled } = this.props;
     return (
       <div className={`input-field ${styles.input}`}>
         <i className="material-icons prefix">mode_edit</i>
         <textarea
           id="chat_input"
-          className="materialize-textarea"
+          className={`materialize-textarea ${styles.inputText}`}
           value={inputText}
           onChange={this.handleChange}
-          disabled={!ready}
+          disabled={disabled}
         > 
         </textarea>
         <label htmlFor="chat_input">Message</label>

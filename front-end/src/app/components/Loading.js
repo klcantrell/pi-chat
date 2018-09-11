@@ -24,13 +24,19 @@ class Loading extends Component {
 
   render() {
     const { hidden } = this.state;
+    const { initialLoad } = this.props;
     return (
-      <LoadingPosed pose={hidden ? 'hidden' : 'visible'} className={styles.loading}>
-        <div className={styles.ring1} />
-        <div className={styles.ring2} />
-        <div className={styles.ring3} />
-        <div className={styles.center} />
-      </LoadingPosed>
+      <div className={styles.container}>
+        <LoadingPosed pose={hidden ? 'hidden' : 'visible'} className={styles.loading}>
+          <div className={styles.ring1} />
+          <div className={styles.ring2} />
+          <div className={styles.ring3} />
+          <div className={styles.center} />
+        </LoadingPosed>
+        {initialLoad && (
+          <h3 className={styles.title}>PiChat</h3>
+        )}
+      </div>
     );
   }
 };
