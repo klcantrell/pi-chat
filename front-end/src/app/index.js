@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import 'core-js/fn/object/assign';
 
 import 'materialize-css/js/cash';
 // import 'materialize-css/js/component'; // this is now being imported in each component module I bring in

@@ -61,6 +61,7 @@
     "babel-preset-minify": "0.4.3",
     "browser-sync": "2.24.7",
     "browser-sync-webpack-plugin": "2.2.2",
+    "core-js": "^2.5.7",
     "css-hot-loader": "1.4.2",
     "css-loader": "1.0.0",
     "error-overlay-webpack-plugin": "0.1.5",
