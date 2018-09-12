@@ -43,11 +43,17 @@ const WELCOME_CHAT = {
     createdAt: new Date(Date.now()),
 };
 
-const NOT_LIVE_CHAT = {
+const NOT_LIVE_CHAT = () => ({
   type: 'pi',
   message: 'I\'m sorry, but I\'m not reading temperatures at the moment.  Try again later!',
   createdAt: new Date(Date.now()),
-};
+});
+
+const ERROR_CHAT = () => ({
+  type: 'pi',
+  message: 'I\'m sorry, but something went wrong.  Try again later!',
+  createdAt: new Date(Date.now()),
+});
 
 class ChatPanel extends Component {
   state = {
@@ -57,6 +63,7 @@ class ChatPanel extends Component {
     userWaitingOnSubscriptionResponse: false,
     welcomeSent: false,
     showLoader: false,
+    isUserUnsubscribing: false,
   }
 
   componentDidMount() {
@@ -85,12 +92,12 @@ class ChatPanel extends Component {
       this.props.client.query({
         fetchPolicy: 'no-cache',
         query: TEMP_QUERY,
-      }).then(res => {
-        const data = { ...res.data.singleChat.items[0] };
+      }).then(({ data: { singleChat } }) => {
+        const chatData = { ...singleChat.items[0] };
         const piChat = {
           type: 'pi',
-          message: data.message,
-          createdAt: new Date(data.createdAt),
+          message: chatData.message,
+          createdAt: new Date(chatData.createdAt),
         };
         setTimeout(() => {
           this.setState({
@@ -108,20 +115,30 @@ class ChatPanel extends Component {
         }, 2500);
       });
     }
-    if (!prevState.userWaitingOnSubscriptionResponse
-          && this.state.userWaitingOnSubscriptionResponse
-          && this.state.subscriptionActive) {
-      setTimeout(() => {
+    if (!prevState.userWaitingOnSubscriptionResponse && this.state.userWaitingOnSubscriptionResponse) {
+      if (this.state.subscriptionActive) {
+        this.loadAnimationBufferTimeout = setTimeout(() => {
+          this.setState({
+            showLoader: true,
+          });
+        }, 600);
+      } else {
         this.setState({
-          showLoader: true,
+          showLoader: false,
         });
-      }, 1500);
+      }
     }
     if (prevState.userWaitingOnSubscriptionResponse && !this.state.userWaitingOnSubscriptionResponse) {
-      this.setState({
-        showLoader: false,
-        userWaitingOnSubscriptionResponse: true,
-      });
+      if (this.state.subscriptionActive) {
+        this.setState({
+          showLoader: false,
+          userWaitingOnSubscriptionResponse: true,
+        }) 
+      } else {
+        this.setState({
+          showLoader: false,
+        });
+      }
     }
   }
 
@@ -144,7 +161,9 @@ class ChatPanel extends Component {
       this.subscribe();
     }
     if (isUserUnsubscribing && this.state.subscriptionActive) {
-      this.unsubscribe();
+      this.setState({
+        isUserUnsubscribing,
+      });
     }
   }
 
@@ -155,41 +174,59 @@ class ChatPanel extends Component {
     });
     this.notLiveTimeout = setTimeout(() => {
       if (this.state.userWaitingOnSubscriptionResponse) {
-        this.unsubscribe();
+        this.unsubscribe(NOT_LIVE_CHAT());
       }
     }, 10000);
     let _this = this;
-    this.subscriptionObserver = this.props.client.subscribe({
-      query: TEMP_SUBSCRIPTION,
-    }).subscribe({
-      next(data) {
-        console.log(data);
-        clearTimeout(_this.notLiveTimeout);
-        _this.setState({
-          userWaitingOnSubscriptionResponse: false,
-        });
-        _this.notLiveTimeout = setTimeout(() => {
-          if (_this.state.userWaitingOnSubscriptionResponse) {
-            _this.unsubscribe();
+    if (!this.subscriptionObserver) {
+      this.subscriptionObserver = this.props.client.subscribe({
+        query: TEMP_SUBSCRIPTION,
+      }).subscribe({
+        next({ data: { onCreateChat: chatData } }) {
+          clearTimeout(_this.notLiveTimeout);
+          const piChat = {
+            type: 'pi',
+            message: chatData.message,
+            createdAt: new Date(chatData.createdAt),
+          };
+          _this.setState(({ chats }) => {
+            return {
+              chats: [...chats, piChat],
+              userWaitingOnSubscriptionResponse: false,
+            }
+          });
+          if (_this.state.isUserUnsubscribing) {
+            return _this.unsubscribe();
           }
-        }, 10000);
-      },
-      error(err) {
-        console.log(err);
-        _this.unsubscribe();
-      }
-    });
+          _this.notLiveTimeout = setTimeout(() => {
+            if (_this.state.userWaitingOnSubscriptionResponse) {
+              _this.unsubscribe(NOT_LIVE_CHAT());
+            }
+          }, 10000);
+        },
+        error(err) {
+          console.log(err);
+          _this.unsubscribe(ERROR_CHAT());
+        }
+      });
+    }
   }
 
-  unsubscribe() {
+  unsubscribe(message) {
     if (this.subscriptionObserver) {
+      clearTimeout(this.loadAnimationBufferTimeout);
+      clearTimeout(this.notLiveTimeout);
       this.subscriptionObserver.unsubscribe();
+      this.subscriptionObserver = null;
       this.setState(({ chats }) => {
-        return {
-          chats: [...chats, NOT_LIVE_CHAT],
+        return message ? {
+          chats: [...chats, message],
           userWaitingOnSubscriptionResponse: false,
           subscriptionActive: false,
-        };
+        } : {
+          userWaitingOnSubscriptionResponse: false,
+          subscriptionActive: false,
+        }
       });
     }
   }
