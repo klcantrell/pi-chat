@@ -7,7 +7,7 @@ const timeDifference = (current, previous) => {
 
   const elapsed = current - previous;
 
-  if (elapsed > milliSecondsPerHour / 3) {
+  if (elapsed > milliSecondsPerMinute / 3) {
     switch (true) {
       case elapsed < milliSecondsPerHour:
         return `${Math.round(elapsed / milliSecondsPerMinute)} min ago`;
