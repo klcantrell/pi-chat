@@ -3,8 +3,13 @@ const Auth = require('@aws-amplify/auth').default;
 const gql = require('graphql-tag');
 const fetch = require('node-fetch');
 const awsConfig = require('./aws.config');
+const sensor = require('node-dht-sensor');
 
 global.fetch = fetch;
+
+console.log('pi server started');
+
+const celsiusToFahrenheit = celsius => ((celsius * 9 / 5) + 32);
 
 Auth.configure({
   identityPoolId: awsConfig.identityPoolId,
@@ -21,8 +26,8 @@ const client = new AWSAppSyncClient({
 });
 
 const TEST_MUTATION = gql`
-  mutation {
-    createChat(message: "YET ANOTHER TEST FROM THE PI CODE!") {
+  mutation CreateChat($message: String!) {
+    createChat(message: $message) {
       id
       message
       createdAt
@@ -31,10 +36,21 @@ const TEST_MUTATION = gql`
   }
 `;
 
-// client.mutate({
-//   mutation: TEST_MUTATION,
-// }).then(res => {
-//   console.log(res);
-// });
-
-console.log('pi server started');
+setInterval(() => {
+  sensor.read(22, 4, (err, temperature, humidity) => {
+    if (!err) {
+      client.mutate({
+        mutation: TEST_MUTATION,
+        variables: {
+          message: `It's ${celsiusToFahrenheit(temperature).toFixed(1)}°F!`
+        }
+      }).then(res => {
+        console.log(res);
+      }).catch(err => {
+        console.log(err);
+      });
+    } else {
+      console.log(err);
+    }
+  });
+}, 4000);
