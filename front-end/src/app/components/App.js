@@ -22,7 +22,6 @@ class App extends Component {
 
   componentDidMount() {
     import('aws-appsync').then(({ default: AWSAppSyncClient }) => {
-      console.log(AWSAppSyncClient);
       client = new AWSAppSyncClient({
         url: awsConfig.graphqlEndpoint,
         region: awsConfig.region,
