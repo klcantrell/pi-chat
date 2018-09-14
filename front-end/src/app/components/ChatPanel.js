@@ -219,14 +219,19 @@ class ChatPanel extends Component {
       this.subscriptionObserver.unsubscribe();
       this.subscriptionObserver = null;
       this.setState(({ chats }) => {
-        return message ? {
-          chats: [...chats, message],
+        const unsubscibeState = {
           userWaitingOnSubscriptionResponse: false,
           subscriptionActive: false,
-        } : {
-          userWaitingOnSubscriptionResponse: false,
-          subscriptionActive: false,
-        }
+          isUserUnsubscribing: false,
+        };
+        return message
+          ? {
+              ...unsubscibeState,
+              chats: [...chats, message],
+            }
+          : {
+              ...unsubscibeState,
+            };
       });
     }
   }
