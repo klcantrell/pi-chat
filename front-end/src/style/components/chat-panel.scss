@@ -7,6 +7,11 @@
   display: flex;
   flex-direction: column;
   background-color: $background-panel;
+  transition: 300ms width, 300ms height;
+  @media screen and (max-width: 450px) {
+    width: 325px;
+    height: 570px;
+  }
 }
 
 .chats {
@@ -14,6 +19,9 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  @media screen and (max-width: 450px) {
+    min-height: 420px;
+  }
 }
 
 .welcomeInstructionsList {
