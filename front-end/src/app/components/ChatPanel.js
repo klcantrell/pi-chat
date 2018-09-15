@@ -29,7 +29,7 @@ const TEMP_SUBSCRIPTION = gql`
   }
 `;
 
-const WELCOME_CHAT = {
+const WELCOME_CHAT = () => ({
     welcome: true,
     type: 'pi',
     message: { __html: `
@@ -41,7 +41,7 @@ const WELCOME_CHAT = {
       </ul>
     `},
     createdAt: new Date(Date.now()),
-};
+});
 
 const NOT_LIVE_CHAT = () => ({
   type: 'pi',
@@ -74,7 +74,7 @@ class ChatPanel extends Component {
       setTimeout(() => {
         this.setState(({ chats }) => {
           return {
-            chats: [...chats, WELCOME_CHAT],
+            chats: [...chats, WELCOME_CHAT()],
             welcomeSent: true,
           };
         });
