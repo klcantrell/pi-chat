@@ -5,11 +5,14 @@ import styles from '../../style/components/loading.scss';
 const LoadingPosed = posed.div({
   visible: {
     opacity: 1,
+    transition: {
+      duration: 300,
+    }
   },
   hidden: {
     opacity: 0,
   },
-})
+});
 
 class Loading extends Component {
   state = {

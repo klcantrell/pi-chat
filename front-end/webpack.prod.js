@@ -1,4 +1,4 @@
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const path = require('path');
 const glob = require('glob-all');
@@ -84,9 +84,9 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: "unpurified.css",
     }),
-    // new MinifyPlugin({}, {
-    //   exclude: /node_modules/
-    // }),
-    // new BundleAnalyzerPlugin()
+    new MinifyPlugin({}, {
+      exclude: /node_modules/
+    }),
+    new BundleAnalyzerPlugin()
   ],
 };
