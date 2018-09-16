@@ -7,7 +7,7 @@ class Input extends Component {
   }
 
   handleChange = e => {
-    if(e.target.value.includes('\n')) {
+    if(/\n/.test(e.target.value)) {
       this.props.handleSubmit(this.state.inputText)
       return this.setState({
         inputText: '',

@@ -6,7 +6,6 @@ import 'core-js/es6/set';
 import 'core-js/fn/object/assign';
 import 'core-js/fn/array/find';
 import 'core-js/fn/array/from';
-import 'core-js/fn/string/includes';
 import 'whatwg-fetch'; 
 
 import '../vendor/materialize-css/cash';
