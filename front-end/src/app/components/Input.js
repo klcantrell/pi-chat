@@ -7,33 +7,39 @@ class Input extends Component {
   }
 
   handleChange = e => {
-    if(/\n/.test(e.target.value)) {
-      this.props.handleSubmit(this.state.inputText)
-      return this.setState({
-        inputText: '',
-      })
-    }
     this.setState({
       inputText: e.target.value,
     });
+  }
+
+  handleSubmit = e => {
+    e.preventDefault();
+    if (this.state.inputText) {
+      this.props.handleSubmit(this.state.inputText);
+      this.setState({
+        inputText: '',
+      });
+    }
   }
 
   render() {
     const { inputText } = this.state;
     const { disabled } = this.props;
     return (
-      <div className={`input-field ${styles.input}`}>
+      <form action="#" onSubmit={this.handleSubmit} className={`input-field ${styles.input}`}>
         <i className="material-icons prefix">mode_edit</i>
-        <textarea
+        <input
           id="chat_input"
-          className={`materialize-textarea ${styles.inputText}`}
+          type="text"
+          className={styles.inputText}
           value={inputText}
           onChange={this.handleChange}
           disabled={disabled}
-        > 
-        </textarea>
+          autoCapitalize="off"
+          autoComplete="off"
+        />
         <label htmlFor="chat_input">Message</label>
-      </div>
+      </form>
     );
   }
  }
