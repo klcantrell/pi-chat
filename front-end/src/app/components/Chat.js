@@ -53,7 +53,7 @@ class Chat extends Component {
             </p>
           </div>
           <div className="card-content">
-            {chat.welcome ? (
+            {chat.withMarkup ? (
                 <p dangerouslySetInnerHTML={chat.message} />
               ) : (
                 <p>{chat.message}</p>

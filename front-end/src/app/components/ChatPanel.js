@@ -30,7 +30,7 @@ const TEMP_SUBSCRIPTION = gql`
 `;
 
 const WELCOME_CHAT = () => ({
-    welcome: true,
+    withMarkup: true,
     type: 'pi',
     message: { __html: `
       <span>Welcome!  Here are a list of messages you can send me:</span>
@@ -55,14 +55,30 @@ const ERROR_CHAT = () => ({
   createdAt: new Date(Date.now()),
 });
 
+const REMINDER_CHAT = () => ({
+  withMarkup: true,
+  type: 'pi',
+  message: { __html: `
+    I\'m sorry but I only understand the commands <strong>get temperature</strong>, <strong>log</strong>, and <strong>stop</strong>. Try one of those!
+  `},
+  createdAt: new Date(Date.now()),
+});
+
+const NOSUB_CHAT = () => ({
+  withMarkup: true,
+  type: 'pi',
+  message: { __html: `
+    I\'m sorry but there's no subscription to stop.  Type <strong>log</strong> if you want to subscribe.
+  `},
+  createdAt: new Date(Date.now()),
+});
+
 class ChatPanel extends Component {
   state = {
     chats: [],
-    userQuerying: false,
-    subscriptionActive: false,
-    userWaitingOnSubscriptionResponse: false,
     welcomeSent: false,
     showLoader: false,
+    subscriptionActive: false,
     isUserUnsubscribing: false,
   }
 
@@ -88,61 +104,9 @@ class ChatPanel extends Component {
       const height = this.chatsBox.offsetHeight;
       scrollEl.scrollTop = height;
     }
-    if (!prevState.userQuerying && this.state.userQuerying) {
-      this.props.client.query({
-        fetchPolicy: 'no-cache',
-        query: TEMP_QUERY,
-      }).then(({ data: { singleChat } }) => {
-        const chatData = { ...singleChat.items[0] };
-        const piChat = {
-          type: 'pi',
-          message: chatData.message,
-          createdAt: new Date(chatData.createdAt),
-        };
-        setTimeout(() => {
-          this.setState({
-            showLoader: true,
-          });
-        }, 1500);
-        setTimeout(() => {
-          this.setState(({ chats }) => {
-            return {
-              chats: [...chats, piChat],
-              userQuerying: false,
-              showLoader: false,
-            };
-          });
-        }, 2500);
-      });
-    }
-    if (!prevState.userWaitingOnSubscriptionResponse && this.state.userWaitingOnSubscriptionResponse) {
-      if (this.state.subscriptionActive) {
-        this.loadAnimationBufferTimeout = setTimeout(() => {
-          this.setState({
-            showLoader: true,
-          });
-        }, 600);
-      } else {
-        this.setState({
-          showLoader: false,
-        });
-      }
-    }
-    if (prevState.userWaitingOnSubscriptionResponse && !this.state.userWaitingOnSubscriptionResponse) {
-      if (this.state.subscriptionActive) {
-        this.setState({
-          showLoader: false,
-          userWaitingOnSubscriptionResponse: true,
-        }) 
-      } else {
-        this.setState({
-          showLoader: false,
-        });
-      }
-    }
   }
 
-  captureUserChat = chat => {
+  handleUserChat = chat => {
     const isUserQuerying = chat.includes('get temperature');
     const isUserSubscribing = chat.includes('log');
     const isUserUnsubscribing = chat.includes('stop');
@@ -154,55 +118,114 @@ class ChatPanel extends Component {
     this.setState(({ chats }) => {
       return {
         chats: [...chats, userChat],
-        userQuerying: isUserQuerying,
       };
     });
-    if (isUserSubscribing) {
-      this.subscribe();
-    }
-    if (isUserUnsubscribing && this.state.subscriptionActive) {
-      this.setState({
-        isUserUnsubscribing,
+    if (isUserQuerying) {
+      return this.queryLatestTemp().then(chat => {
+        this.sendPiChat(chat);
       });
     }
+    if (isUserSubscribing && !this.state.subscriptionActive) {
+      return this.subscribe();
+    }
+    if (isUserUnsubscribing) {
+      return this.state.subscriptionActive
+        ? this.setState({
+            isUserUnsubscribing,
+          })
+        : this.sendPiChat(NOSUB_CHAT());
+    }
+    this.sendPiChat(REMINDER_CHAT());
   }
 
-  subscribe() {
-    this.setState({
-      subscriptionActive: true,
-      userWaitingOnSubscriptionResponse: true,
+  queryLatestTemp = () => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        this.setState({
+          showLoader: true,
+        });
+      }, 1500);
+      this.props.client.query({
+        fetchPolicy: 'no-cache',
+        query: TEMP_QUERY,
+      }).then(({ data: { singleChat } }) => {
+        const chatData = { ...singleChat.items[0] };
+        const piChat = {
+          type: 'pi',
+          message: chatData.message,
+          createdAt: new Date(chatData.createdAt),
+        };
+        resolve(piChat);
+      });
+    })
+  }
+
+  handleSubUpdate = piChat => {
+    clearTimeout(this.notLiveTimeout);
+    if (this.state.isUserUnsubscribing) {
+      return this.unsubscribe();
+    }
+    this.sendPiChat(piChat).then(() => {
+      setTimeout(() => {
+        this.setState({
+          showLoader: true,
+        })
+      }, 500);
     });
     this.notLiveTimeout = setTimeout(() => {
-      if (this.state.userWaitingOnSubscriptionResponse) {
+      if (this.state.subscriptionActive) {
         this.unsubscribe(NOT_LIVE_CHAT());
       }
     }, 10000);
+  }
+
+  sendPiChat = piChat => {
+    return new Promise((resolve, reject) => {
+      if (!this.state.showLoader && !this.state.isUserUnsubscribing) {
+        setTimeout(() => {
+          this.setState({
+            showLoader: true,
+          });
+        }, 1500);
+      }
+      setTimeout(() => {
+        this.setState(({ chats }) => {
+          return {
+            chats: [...chats, piChat],
+            showLoader: false,
+          };
+        });
+        resolve();
+      }, 2500);
+    });
+  }
+
+  subscribe() {
     let _this = this;
-    if (!this.subscriptionObserver) {
-      this.subscriptionObserver = this.props.client.subscribe({
+    _this.setState({
+      subscriptionActive: true,
+    });
+    setTimeout(() => {
+      _this.setState({
+        showLoader: true,
+      });
+    }, 1000);
+    _this.notLiveTimeout = setTimeout(() => {
+      if (_this.state.subscriptionActive) {
+        _this.unsubscribe(NOT_LIVE_CHAT());
+      }
+    }, 10000);
+    if (!_this.subscriptionObserver) {
+      _this.subscriptionObserver = _this.props.client.subscribe({
         query: TEMP_SUBSCRIPTION,
       }).subscribe({
         next({ data: { onCreateChat: chatData } }) {
-          clearTimeout(_this.notLiveTimeout);
           const piChat = {
             type: 'pi',
             message: chatData.message,
             createdAt: new Date(chatData.createdAt),
           };
-          _this.setState(({ chats }) => {
-            return {
-              chats: [...chats, piChat],
-              userWaitingOnSubscriptionResponse: false,
-            }
-          });
-          if (_this.state.isUserUnsubscribing) {
-            return _this.unsubscribe();
-          }
-          _this.notLiveTimeout = setTimeout(() => {
-            if (_this.state.userWaitingOnSubscriptionResponse) {
-              _this.unsubscribe(NOT_LIVE_CHAT());
-            }
-          }, 10000);
+          _this.handleSubUpdate(piChat);
         },
         error(err) {
           console.log(err);
@@ -214,23 +237,22 @@ class ChatPanel extends Component {
 
   unsubscribe(message) {
     if (this.subscriptionObserver) {
-      clearTimeout(this.loadAnimationBufferTimeout);
       clearTimeout(this.notLiveTimeout);
       this.subscriptionObserver.unsubscribe();
       this.subscriptionObserver = null;
       this.setState(({ chats }) => {
-        const unsubscibeState = {
-          userWaitingOnSubscriptionResponse: false,
+        const unsubscribeState = {
           subscriptionActive: false,
           isUserUnsubscribing: false,
+          showLoader: false,
         };
         return message
           ? {
-              ...unsubscibeState,
+              ...unsubscribeState,
               chats: [...chats, message],
             }
           : {
-              ...unsubscibeState,
+              ...unsubscribeState,
             };
       });
     }
@@ -253,7 +275,7 @@ class ChatPanel extends Component {
             )}
           </div>
         </div>
-        <Input handleSubmit={this.captureUserChat} disabled={!welcomeSent} />
+        <Input handleSubmit={this.handleUserChat} disabled={!welcomeSent} />
       </div>
     );
   }
