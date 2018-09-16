@@ -35,9 +35,9 @@ const WELCOME_CHAT = () => ({
     message: { __html: `
       <span>Welcome!  Here are a list of messages you can send me:</span>
       <ul class=${styles.welcomeInstructionsList}>
-        <li class=${styles.welcomeInstructionsItem}>Type <strong>get temperature</strong> and I\'ll give you the latest temperature reading.</li>
-        <li class=${styles.welcomeInstructionsItem}>Type <strong>log</strong> and I\'ll continuously send temperature readings every second if I can.</li>
-        <li class=${styles.welcomeInstructionsItem}>Type <strong>stop</strong> if you need me to quit logging.</li>
+        <li class=${styles.welcomeInstructionsItem}>Type <strong>get temp</strong> and I\'ll give you the latest temperature reading.</li>
+        <li class=${styles.welcomeInstructionsItem}>Type <strong>log</strong> to subscribe to real-time updates of my temperature readings.</li>
+        <li class=${styles.welcomeInstructionsItem}>Type <strong>stop</strong> if you want to unsubscribe from real-time updates.</li>
       </ul>
     `},
     createdAt: new Date(Date.now()),
@@ -59,7 +59,7 @@ const REMINDER_CHAT = () => ({
   withMarkup: true,
   type: 'pi',
   message: { __html: `
-    I\'m sorry but I only understand the commands <strong>get temperature</strong>, <strong>log</strong>, and <strong>stop</strong>. Try one of those!
+    I\'m sorry but I only understand the commands <strong>get temp</strong>, <strong>log</strong>, and <strong>stop</strong>. Try one of those!
   `},
   createdAt: new Date(Date.now()),
 });
@@ -107,7 +107,7 @@ class ChatPanel extends Component {
   }
 
   handleUserChat = chat => {
-    const isUserQuerying = chat.includes('get temperature');
+    const isUserQuerying = chat.includes('get temp');
     const isUserSubscribing = chat.includes('log');
     const isUserUnsubscribing = chat.includes('stop');
     const userChat = {
@@ -135,7 +135,9 @@ class ChatPanel extends Component {
           })
         : this.sendPiChat(NOSUB_CHAT());
     }
-    this.sendPiChat(REMINDER_CHAT());
+    if (!this.state.subscriptionActive) {
+      this.sendPiChat(REMINDER_CHAT());
+    }
   }
 
   queryLatestTemp = () => {
