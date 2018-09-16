@@ -107,9 +107,9 @@ class ChatPanel extends Component {
   }
 
   handleUserChat = chat => {
-    const isUserQuerying = /^\s*get temp\s*$/.test(chat);
-    const isUserSubscribing = /^\s*log\s*$/.test(chat);
-    const isUserUnsubscribing = /^\s*stop\s*$/.test(chat);
+    const isUserQuerying = /^\s*get temp\s*$/.test(chat.toLowerCase());
+    const isUserSubscribing = /^\s*log\s*$/.test(chat.toLowerCase());
+    const isUserUnsubscribing = /^\s*stop\s*$/.test(chat.toLowerCase());
     const userChat = {
       message: chat,
       createdAt: new Date(),
