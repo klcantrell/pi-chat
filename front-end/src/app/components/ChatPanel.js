@@ -80,6 +80,7 @@ class ChatPanel extends Component {
     showLoader: false,
     subscriptionActive: false,
     isUserUnsubscribing: false,
+    inProcess: false,
   }
 
   componentDidMount() {
@@ -99,7 +100,7 @@ class ChatPanel extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.simplebar) {
+    if (this.simplebar && this.state.chats.length > 1) {
       const scrollEl = this.simplebar.getScrollElement();
       const height = this.chatsBox.offsetHeight;
       scrollEl.scrollTop = height;
@@ -107,9 +108,8 @@ class ChatPanel extends Component {
   }
 
   handleUserChat = chat => {
-    const isUserQuerying = /^\s*get temp\s*$/.test(chat.toLowerCase());
-    const isUserSubscribing = /^\s*log\s*$/.test(chat.toLowerCase());
-    const isUserUnsubscribing = /^\s*stop\s*$/.test(chat.toLowerCase());
+    const { inProcess, subscriptionActive } = this.state;
+
     const userChat = {
       message: chat,
       createdAt: new Date(),
@@ -118,24 +118,30 @@ class ChatPanel extends Component {
     this.setState(({ chats }) => {
       return {
         chats: [...chats, userChat],
+        inProcess: true,
       };
     });
-    if (isUserQuerying) {
+
+    const isUserQuerying = /^\s*get temp\s*$/.test(chat.toLowerCase());
+    const isUserSubscribing = /^\s*log\s*$/.test(chat.toLowerCase());
+    const isUserUnsubscribing = /^\s*stop\s*$/.test(chat.toLowerCase());
+
+    if (isUserQuerying && !subscriptionActive && !inProcess) {
       return this.queryLatestTemp().then(chat => {
         this.sendPiChat(chat);
       });
     }
-    if (isUserSubscribing && !this.state.subscriptionActive) {
+    if (isUserSubscribing && !subscriptionActive && !inProcess) {
       return this.subscribe();
     }
     if (isUserUnsubscribing) {
-      return this.state.subscriptionActive
+      return subscriptionActive
         ? this.setState({
             isUserUnsubscribing,
           })
         : this.sendPiChat(NOSUB_CHAT());
     }
-    if (!this.state.subscriptionActive) {
+    if (!subscriptionActive && !inProcess) {
       this.sendPiChat(REMINDER_CHAT());
     }
   }
@@ -195,6 +201,7 @@ class ChatPanel extends Component {
           return {
             chats: [...chats, piChat],
             showLoader: false,
+            inProcess: false,
           };
         });
         resolve();
@@ -247,6 +254,7 @@ class ChatPanel extends Component {
           subscriptionActive: false,
           isUserUnsubscribing: false,
           showLoader: false,
+          inProcess: false,
         };
         return message
           ? {
