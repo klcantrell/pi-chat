@@ -33,7 +33,7 @@ const WELCOME_CHAT = () => ({
     withMarkup: true,
     type: 'pi',
     message: { __html: `
-      <span>Welcome!  Here are a list of messages you can send me:</span>
+      <span>Welcome!  I'm a Raspberry Pi at Kal's house.  Here are a list of messages you can send me:</span>
       <ul class=${styles.welcomeInstructionsList}>
         <li class=${styles.welcomeInstructionsItem}>Type <strong>get temp</strong> and I\'ll give you the latest temperature reading.</li>
         <li class=${styles.welcomeInstructionsItem}>Type <strong>log</strong> to subscribe to real-time updates of my temperature readings.</li>
