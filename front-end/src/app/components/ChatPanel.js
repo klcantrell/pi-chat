@@ -30,8 +30,9 @@ const TEMP_SUBSCRIPTION = gql`
 `;
 
 const WELCOME_CHAT = () => ({
-    withMarkup: true,
     type: 'pi',
+    withMarkup: true,
+    fresh: true,
     message: { __html: `
       <span>Welcome!  I'm a Raspberry Pi at Kal's house.  Here are a list of messages you can send me:</span>
       <ul class=${styles.welcomeInstructionsList}>
@@ -45,19 +46,22 @@ const WELCOME_CHAT = () => ({
 
 const NOT_LIVE_CHAT = () => ({
   type: 'pi',
+  fresh: true,
   message: 'I\'m sorry, but I\'m not reading temperatures at the moment.  Try again later!',
   createdAt: new Date(Date.now()),
 });
 
 const ERROR_CHAT = () => ({
   type: 'pi',
+  fresh: true,
   message: 'I\'m sorry, but something went wrong.  Try again later!',
   createdAt: new Date(Date.now()),
 });
 
 const REMINDER_CHAT = () => ({
-  withMarkup: true,
   type: 'pi',
+  withMarkup: true,
+  fresh: true,
   message: { __html: `
     I\'m sorry but I only understand the commands <strong>get temp</strong>, <strong>log</strong>, and <strong>stop</strong>. Try one of those!
   `},
@@ -65,8 +69,9 @@ const REMINDER_CHAT = () => ({
 });
 
 const NOSUB_CHAT = () => ({
-  withMarkup: true,
   type: 'pi',
+  withMarkup: true,
+  fresh: true,
   message: { __html: `
     I\'m sorry but there's no subscription to stop.  Type <strong>log</strong> if you want to subscribe.
   `},
@@ -231,6 +236,7 @@ class ChatPanel extends Component {
         next({ data: { onCreateChat: chatData } }) {
           const piChat = {
             type: 'pi',
+            fresh: true,
             message: chatData.message,
             createdAt: new Date(chatData.createdAt),
           };

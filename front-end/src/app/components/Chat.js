@@ -32,7 +32,7 @@ class Chat extends Component {
   renderTime(chat) {
     if (chat.type === 'pi') {
       const piStaleValue = timeDifferenceForDate(chat.createdAt);
-      if (piStaleValue) {
+      if (piStaleValue && !chat.fresh) {
         return `Last update was ${piStaleValue}`;
       }
     }
