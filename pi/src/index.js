@@ -25,7 +25,7 @@ const client = new AWSAppSyncClient({
   },
 });
 
-const TEST_MUTATION = gql`
+const CHAT_MUTATION = gql`
   mutation CreateChat($message: String!) {
     createChat(message: $message) {
       id
@@ -40,12 +40,10 @@ setInterval(() => {
   sensor.read(22, 4, (err, temperature, humidity) => {
     if (!err) {
       client.mutate({
-        mutation: TEST_MUTATION,
+        mutation: CHAT_MUTATION,
         variables: {
           message: `It's ${celsiusToFahrenheit(temperature).toFixed(1)}°F!`
         }
-      }).then(res => {
-        console.log(res);
       }).catch(err => {
         console.log(err);
       });
